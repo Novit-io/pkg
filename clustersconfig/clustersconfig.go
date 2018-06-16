@@ -12,11 +12,13 @@ import (
 )
 
 type Config struct {
-	Hosts      []*Host
-	Groups     []*Group
-	Clusters   []*Cluster
-	Configs    []*Template
-	StaticPods []*Template `yaml:"static_pods"`
+	Hosts        []*Host
+	Groups       []*Group
+	Clusters     []*Cluster
+	Configs      []*Template
+	StaticPods   []*Template    `yaml:"static_pods"`
+	SSLConfig    string         `yaml:"ssl_config"`
+	CertRequests []*CertRequest `yaml:"cert_requests"`
 }
 
 func FromBytes(data []byte) (*Config, error) {
@@ -102,6 +104,15 @@ func (c *Config) ConfigTemplate(name string) *Template {
 
 func (c *Config) StaticPodsTemplate(name string) *Template {
 	for _, s := range c.StaticPods {
+		if s.Name == name {
+			return s
+		}
+	}
+	return nil
+}
+
+func (c *Config) CSR(name string) *CertRequest {
+	for _, s := range c.CertRequests {
 		if s.Name == name {
 			return s
 		}

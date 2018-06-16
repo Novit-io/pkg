@@ -2,6 +2,7 @@ package clustersconfig
 
 import (
 	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -91,6 +92,25 @@ func FromDir(dirPath string) (*Config, error) {
 		return nil, err
 	}
 	if err := loadTemplates("static-pods", &config.StaticPods); err != nil {
+		return nil, err
+	}
+
+	if ba, err := ioutil.ReadFile(filepath.Join(dirPath, "ssl-config.json")); err == nil {
+		config.SSLConfig = string(ba)
+
+	} else if !os.IsNotExist(err) {
+		return nil, err
+	}
+
+	if ba, err := ioutil.ReadFile(filepath.Join(dirPath, "cert-requests.yaml")); err == nil {
+		reqs := make([]*CertRequest, 0)
+		if err = yaml.Unmarshal(ba, &reqs); err != nil {
+			return nil, err
+		}
+
+		config.CertRequests = reqs
+
+	} else if !os.IsNotExist(err) {
 		return nil, err
 	}
 
