@@ -67,7 +67,6 @@ type FileDef struct {
 	Path    string
 	Mode    os.FileMode
 	Content string
-	Secret  string
 }
 
 type NetworkDef struct {
