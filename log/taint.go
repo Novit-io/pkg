@@ -1,7 +1,7 @@
 package log
 
 import (
-	"novit.nc/direktil/src/pkg/color"
+	"novit.nc/direktil/pkg/color"
 )
 
 const (

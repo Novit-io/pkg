@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"novit.nc/direktil/src/pkg/color"
+	"novit.nc/direktil/pkg/color"
 )
 
 const (
