@@ -18,9 +18,7 @@ func compress(path string) {
 
 	defer in.Close()
 
-	outPath := filepath.Join(filepath.Dir(path), "archives", filepath.Base(path)+".xz")
-
-	os.MkdirAll(filepath.Dir(outPath), 0700)
+	outPath := filepath.Join(filepath.Dir(path), filepath.Base(path)+".xz")
 
 	out, err := os.Create(outPath)
 	if err != nil {

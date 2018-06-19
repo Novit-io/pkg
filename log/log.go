@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -34,7 +35,7 @@ type Log struct {
 	console io.Writer
 	pending []Entry
 	out     *os.File
-	outPath string
+	outTS   string
 }
 
 func Get(name string) *Log {
@@ -207,21 +208,26 @@ func (l *Log) Write(b []byte) (n int, err error) {
 }
 
 func (l *Log) writeEntry(e Entry) (err error) {
-	path := fmt.Sprintf("/var/log/%s.%s.log",
-		l.name, e.Time.Truncate(time.Hour).Format(time.RFC3339))
+	ts := e.Time.Truncate(time.Hour).Format(time.RFC3339)
 
-	currentPath := fmt.Sprintf("/var/log/%s.log", l.name)
+	path := fmt.Sprintf("/var/log/%s.log", l.name)
 
-	if l.outPath != path {
+	if l.outTS != ts {
 		if l.out != nil {
 			if err := l.out.Close(); err != nil {
 				fmt.Fprintf(os.Stderr, "log %s: failed to close output: %v\n", l.name, err)
 			}
-			os.Remove(currentPath)
-			go compress(l.outPath)
+			archPath := fmt.Sprintf("/var/log/archives/%s.%s.log", l.name, l.outTS)
+
+			os.MkdirAll(filepath.Dir(archPath), 0700)
+			if err := os.Rename(path, archPath); err != nil {
+				fmt.Fprintf(os.Stderr, "log %s: failed to achive: %v", l.name, err)
+			}
+
+			go compress(archPath)
 		}
 		l.out = nil
-		l.outPath = ""
+		l.outTS = ""
 	}
 
 	if l.out == nil {
@@ -230,12 +236,7 @@ func (l *Log) writeEntry(e Entry) (err error) {
 			return
 		}
 
-		l.outPath = path
-
-		os.Remove(currentPath)
-		if err := os.Symlink(path, currentPath); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to symlink %s.log: %v\n", l.name, err)
-		}
+		l.outTS = ts
 	}
 
 	_, err = e.WriteTo(l.out)
