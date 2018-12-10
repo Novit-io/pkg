@@ -17,18 +17,6 @@ type Cluster struct {
 	Addons []byte
 }
 
-type Host struct {
-	Name string
-	MACs []string
-	IPs  []string
-
-	Kernel string
-	Initrd string
-	Layers map[string]string
-
-	Config []byte
-}
-
 func FromBytes(data []byte) (*Config, error) {
 	config := &Config{}
 	if err := yaml.Unmarshal(data, config); err != nil {
