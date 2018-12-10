@@ -1,8 +1,13 @@
 package localconfig
 
-import "strings"
+import (
+	"io/ioutil"
+	"strings"
 
-type LocalConfig struct {
+	yaml "gopkg.in/yaml.v2"
+)
+
+type Config struct {
 	Clusters []*Cluster
 	Hosts    []*Host
 }
@@ -24,7 +29,24 @@ type Host struct {
 	Config []byte
 }
 
-func (c *LocalConfig) ClusterByName(name string) *Cluster {
+func FromBytes(data []byte) (*Config, error) {
+	config := &Config{}
+	if err := yaml.Unmarshal(data, config); err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
+func FromFile(path string) (*Config, error) {
+	ba, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return FromBytes(ba)
+}
+
+func (c *Config) ClusterByName(name string) *Cluster {
 	for _, cluster := range c.Clusters {
 		if cluster.Name == name {
 			return cluster
@@ -33,7 +55,7 @@ func (c *LocalConfig) ClusterByName(name string) *Cluster {
 	return nil
 }
 
-func (c *LocalConfig) HostByIP(ip string) *Host {
+func (c *Config) HostByIP(ip string) *Host {
 	for _, host := range c.Hosts {
 		for _, hostIP := range host.IPs {
 			if hostIP == ip {
@@ -44,7 +66,7 @@ func (c *LocalConfig) HostByIP(ip string) *Host {
 	return nil
 }
 
-func (c *LocalConfig) HostByMAC(mac string) *Host {
+func (c *Config) HostByMAC(mac string) *Host {
 	// a bit of normalization
 	mac = strings.Replace(strings.ToLower(mac), "-", ":", -1)
 
