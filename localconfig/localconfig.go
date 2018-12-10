@@ -1,6 +1,7 @@
 package localconfig
 
 import (
+	"io"
 	"io/ioutil"
 	"strings"
 
@@ -8,13 +9,14 @@ import (
 )
 
 type Config struct {
-	Clusters []*Cluster
-	Hosts    []*Host
+	Clusters  []*Cluster
+	Hosts     []*Host
+	SSLConfig string
 }
 
 type Cluster struct {
 	Name   string
-	Addons []byte
+	Addons string
 }
 
 func FromBytes(data []byte) (*Config, error) {
@@ -34,10 +36,32 @@ func FromFile(path string) (*Config, error) {
 	return FromBytes(ba)
 }
 
+func (c *Config) WriteTo(w io.Writer) error {
+	return yaml.NewEncoder(w).Encode(c)
+}
+
+func (c *Config) Cluster(name string) *Cluster {
+	for _, cluster := range c.Clusters {
+		if cluster.Name == name {
+			return cluster
+		}
+	}
+	return nil
+}
+
 func (c *Config) ClusterByName(name string) *Cluster {
 	for _, cluster := range c.Clusters {
 		if cluster.Name == name {
 			return cluster
+		}
+	}
+	return nil
+}
+
+func (c *Config) Host(name string) *Host {
+	for _, host := range c.Hosts {
+		if host.Name == name {
+			return host
 		}
 	}
 	return nil

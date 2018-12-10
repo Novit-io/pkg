@@ -11,18 +11,20 @@ type Host struct {
 	MACs []string
 	IPs  []string
 
-	Kernel string
-	Initrd string
-	Layers map[string]string
+	IPXE string
 
-	Config []byte
+	Kernel   string
+	Initrd   string
+	Versions map[string]string
+
+	Config string
 }
 
 func (h *Host) WriteHashDataTo(w io.Writer) error {
 	return yaml.NewEncoder(w).Encode(Host{
-		Kernel: h.Kernel,
-		Initrd: h.Initrd,
-		Layers: h.Layers,
-		Config: h.Config,
+		Kernel:   h.Kernel,
+		Initrd:   h.Initrd,
+		Versions: h.Versions,
+		Config:   h.Config,
 	})
 }
