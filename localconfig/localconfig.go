@@ -15,8 +15,9 @@ type Config struct {
 }
 
 type Cluster struct {
-	Name   string
-	Addons string
+	Name          string
+	Addons        string
+	BootstrapPods string
 }
 
 func FromBytes(data []byte) (*Config, error) {
